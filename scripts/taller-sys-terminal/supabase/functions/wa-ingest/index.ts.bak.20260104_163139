@@ -1,0 +1,148 @@
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// Wasender
+const WASENDER_BASE_URL = (Deno.env.get("WASENDER_BASE_URL") || "https://www.wasenderapi.com").replace(/\/+$/,'');
+const WASENDER_API_KEY = Deno.env.get("WASENDER_API_KEY") || Deno.env.get("WASENDER_SESSION_API_KEY") || "";
+
+// Ventana anti-spam (minutos)
+const ACK_WINDOW_MINUTES = Number(Deno.env.get("ACK_WINDOW_MINUTES") || "240");
+
+// Firma webhook
+const WEBHOOK_SECRET = Deno.env.get("WEBHOOK_SECRET") || "";
+
+// Texto ACK
+const ACK_TEXT = Deno.env.get("ACK_TEXT") ||
+  "Hola, gracias por escribirnos 😊\nYa recibimos tu mensaje y en breve alguien del equipo te contacta para ayudarte.";
+
+async function sb(path: string, init?: RequestInit) {
+  const r = await fetch(`${SUPABASE_URL}${path}`, {
+    ...init,
+    headers: {
+      apikey: SERVICE_ROLE,
+      Authorization: `Bearer ${SERVICE_ROLE}`,
+      "Content-Type": "application/json",
+      ...(init?.headers || {}),
+    },
+  });
+  if (!r.ok) throw new Error(`Supabase ${r.status}: ${await r.text()}`);
+  return r;
+}
+
+function normPhone(raw: string) {
+  if (!raw) return "";
+  const pn = raw.split("@")[0].replace(/[^\d]/g, "");
+  if (!pn) return "";
+  if (pn.length === 8) return `+506${pn}`;
+  if (pn.startsWith("506")) return `+${pn}`;
+  return pn.startsWith("+") ? pn : `+${pn}`;
+}
+
+function jidFromPhone(phone: string) {
+  const digits = phone.replace(/[^\d]/g, "");
+  return `${digits}@s.whatsapp.net`;
+}
+
+async function wasenderSend(toJid: string, text: string) {
+  if (!WASENDER_API_KEY) throw new Error("Missing WASENDER_API_KEY");
+  const r = await fetch(`${WASENDER_BASE_URL}/api/send-message`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${WASENDER_API_KEY}`,
+    },
+    body: JSON.stringify({ to: toJid, text }),
+  });
+  const t = await r.text();
+  if (!r.ok) throw new Error(`Wasender ${r.status}: ${t}`);
+  return t;
+}
+
+async function ackGate(telefono: string) {
+  const now = new Date();
+  const since = new Date(now.getTime() - ACK_WINDOW_MINUTES * 60_000).toISOString();
+
+  // ¿Ya se saludó recientemente?
+  const checkUrl =
+    `/rest/v1/wa_ack_state?select=telefono,last_ack_at&telefono=eq.${encodeURIComponent(telefono)}&last_ack_at=gte.${encodeURIComponent(since)}&limit=1`;
+  const j = await (await sb(checkUrl, { method: "GET" })).json();
+  const recent = Array.isArray(j) && j.length > 0;
+  if (recent) return { allowed: false };
+
+  // Reservar/actualizar marca (upsert)
+  await sb("/rest/v1/wa_ack_state", {
+    method: "POST",
+    headers: { "Prefer": "resolution=merge-duplicates" },
+    body: JSON.stringify([{ telefono, last_ack_at: now.toISOString() }]),
+  });
+
+  return { allowed: true };
+}
+
+Deno.serve(async (req) => {
+  try {
+    if (req.method !== "POST") return new Response("ok", { status: 200 });
+
+    // Validación firma
+    if (WEBHOOK_SECRET) {
+      const sig = req.headers.get("x-webhook-signature") || req.headers.get("X-Webhook-Signature") || "";
+      if (!sig || sig !== WEBHOOK_SECRET) {
+        return new Response(JSON.stringify({ ok: false, error: "Invalid signature" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const msg = body?.data?.messages || body?.data?.message || body?.data?.messages?.[0] || body?.data || {};
+
+    if (msg?.key?.fromMe) {
+      return new Response(JSON.stringify({ ok: true, ignored: true, reason: "fromMe" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const telefono = normPhone(msg?.key?.cleanedSenderPn || msg?.key?.senderPn || msg?.key?.remoteJid || "");
+    const mensaje =
+      String(
+        msg?.messageBody ||
+          msg?.message?.conversation ||
+          msg?.message?.extendedTextMessage?.text ||
+          ""
+      ).trim();
+
+    if (!telefono || !mensaje) {
+      return new Response(JSON.stringify({ ok: true, ignored: true, reason: "missing telefono/mensaje" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Guardar entrada
+    await sb("/rest/v1/wa_entradas", {
+      method: "POST",
+      body: JSON.stringify([{ telefono, mensaje, estado: "nuevo" }]),
+    });
+
+    // Anti-spam robusto
+    const gate = await ackGate(telefono);
+    if (!gate.allowed) {
+      return new Response(JSON.stringify({ ok: true, inserted: true, telefono, ack: "skipped_recent" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // ACK inmediato
+    const to = jidFromPhone(telefono);
+    await wasenderSend(to, ACK_TEXT);
+
+    return new Response(JSON.stringify({ ok: true, inserted: true, telefono, ack: "sent" }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e: any) {
+    return new Response(JSON.stringify({ ok: false, error: String(e?.message || e) }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+});

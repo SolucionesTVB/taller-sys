@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NOA Omnicanal · Demo Taller Automotriz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #020617;
+        --panel: #020617;
+        --accent: #38bdf8;
+        --accent-strong: #22c55e;
+        --accent-soft: rgba(56, 189, 248, 0.18);
+        --danger: #f97373;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --border: #1f2937;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #0b1120 0, #020617 40%, #020617 100%);
+        color: var(--text);
+      }
+
+      .app { min-height: 100vh; display: flex; }
+
+      .sidebar {
+        width: 240px;
+        background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
+        border-right: 1px solid #111827;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .logo { display: flex; align-items: center; gap: 10px; }
+
+      .logo-badge {
+        width: 32px; height: 32px; border-radius: 999px;
+        background: radial-gradient(circle at 30% 20%, #38bdf8, #1d4ed8 60%, #020617 100%);
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-weight: 700; font-size: 18px;
+        box-shadow: 0 0 14px rgba(56,189,248,0.7);
+      }
+
+      .logo-text-main {
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .logo-text-sub { font-size: 11px; color: var(--muted); }
+
+      .sidebar-section-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      .nav-list { display: flex; flex-direction: column; gap: 6px; }
+
+      .nav-item {
+        padding: 7px 8px;
+        border-radius: 9px;
+        font-size: 12px;
+        color: var(--muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid transparent;
+      }
+
+      .nav-item-left { display: flex; align-items: center; gap: 6px; }
+
+      .nav-dot {
+        width: 6px; height: 6px; border-radius: 999px;
+        background: #111827;
+      }
+
+      .nav-item.active {
+        background: var(--accent-soft);
+        color: var(--text);
+        border-color: rgba(56,189,248,0.7);
+        box-shadow: 0 0 10px rgba(56,189,248,0.6);
+      }
+
+      .nav-item.active .nav-dot {
+        background: var(--accent);
+        box-shadow: 0 0 8px rgba(56,189,248,0.9);
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        font-size: 10px;
+        color: var(--muted);
+        border-top: 1px solid #111827;
+        padding-top: 6px;
+      }
+
+      .sidebar-tagline { font-size: 11px; margin-top: 4px; color: var(--accent); }
+
+      .content {
+        flex: 1;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .topbar-title-group { display: flex; flex-direction: column; gap: 2px; }
+
+      .topbar-title { font-size: 18px; font-weight: 600; }
+
+      .topbar-subtitle { font-size: 12px; color: var(--muted); }
+
+      .badge {
+        font-size: 11px;
+        padding: 4px 9px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: var(--muted);
+      }
+
+      .badge-accent {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .cards-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0,1fr));
+        gap: 10px;
+      }
+
+      .card {
+        background: var(--panel);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 10px;
+        font-size: 12px;
+      }
+
+      .card-header {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+
+      .card-value { font-size: 20px; font-weight: 600; margin-bottom: 2px; }
+
+      .card-trend { font-size: 11px; color: var(--accent-strong); }
+
+      .card-trend.bad { color: var(--danger); }
+
+      .grid-main {
+        display: grid;
+        grid-template-columns: 2.2fr 1.4fr;
+        gap: 12px;
+      }
+
+      .table-wrapper { height: 300px; display: flex; flex-direction: column; }
+
+      .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .table-title { font-size: 13px; font-weight: 500; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      thead { position: sticky; top: 0; background: #020617; }
+
+      th, td {
+        padding: 5px 4px;
+        text-align: left;
+        border-bottom: 1px solid #020617;
+      }
+
+      th {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+      }
+
+      tbody tr { cursor: pointer; }
+
+      tbody tr:nth-child(even) { background: #020617; }
+
+      tbody tr:hover { background: #020617; }
+
+      .row-selected { background: rgba(56,189,248,0.16) !important; }
+
+      .status-pill {
+        font-size: 10px;
+        padding: 3px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        display: inline-flex;
+        gap: 4px;
+      }
+
+      .status-ok {
+        border-color: rgba(34,197,94,0.5);
+        color: #bbf7d0;
+        background: rgba(22,163,74,0.14);
+      }
+
+      .status-follow {
+        border-color: rgba(248,113,113,0.6);
+        color: #fecaca;
+        background: rgba(185,28,28,0.16);
+      }
+
+      .channel-pill {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+      }
+
+      .channel-pill.whatsapp { border-color:#22c55e;color:#bbf7d0; }
+      .channel-pill.facebook { border-color:#3b82f6;color:#bfdbfe; }
+      .channel-pill.web { border-color:#38bdf8;color:#e0f2fe; }
+
+      .details-card { height: 300px; display: flex; flex-direction: column; }
+
+      .details-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+
+      .details-name { font-size: 15px; font-weight: 500; }
+
+      .details-plate { font-size: 12px; color: var(--muted); }
+
+      .details-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .details-block-title {
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+      }
+
+      .details-comment {
+        padding: 7px;
+        border-radius: 10px;
+        background: #020617;
+        border: 1px dashed var(--border);
+      }
+
+      .details-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 8px;
+      }
+
+      .meta-label { font-size: 10px; color: var(--muted); }
+
+      .meta-value { font-size: 12px; }
+
+      .chip {
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        display: inline-block;
+      }
+
+      .tasks-row {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 2fr 1.3fr;
+        gap: 10px;
+      }
+
+      .tasks-list {
+        max-height: 190px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .task-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 7px;
+        border-radius: 9px;
+        border: 1px solid #020617;
+        background: #020617;
+        font-size: 11px;
+      }
+
+      .task-main { display: flex; flex-direction: column; gap: 2px; }
+      .task-title { font-weight: 500; }
+      .task-sub { font-size: 10px; color: var(--muted); }
+
+      .task-tags {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 3px;
+        font-size: 10px;
+      }
+
+      .task-pill {
+        padding: 2px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+      }
+
+      .task-pill.prioridad-alta {
+        border-color: rgba(248,113,113,0.8);
+        color: #fecaca;
+        background: rgba(185,28,28,0.2);
+      }
+
+      .task-pill.prioridad-media {
+        border-color: #f97316;
+        color: #fed7aa;
+        background: rgba(194,65,12,0.2);
+      }
+
+      .task-pill.prioridad-baja {
+        border-color: #22c55e;
+        color: #bbf7d0;
+        background: rgba(22,163,74,0.18);
+      }
+
+      .task-pill.estado-pendiente { border-color:#facc15;color:#fef9c3; }
+      .task-pill.estado-en-curso { border-color:#38bdf8;color:#e0f2fe; }
+      .task-pill.estado-cerrada { border-color:#22c55e;color:#bbf7d0; }
+
+      .whatsapp-layout {
+        display: grid;
+        grid-template-columns: 1.7fr 2.3fr;
+        gap: 10px;
+        height: 420px;
+      }
+
+      .whatsapp-item {
+        padding: 7px;
+        border-radius: 10px;
+        border: 1px solid #020617;
+        background: #020617;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        cursor: pointer;
+      }
+
+      .whatsapp-item.active {
+        border-color: rgba(56,189,248,0.7);
+        box-shadow: 0 0 10px rgba(56,189,248,0.6);
+      }
+
+      .whatsapp-avatar {
+        width: 24px; height: 24px; border-radius: 999px;
+        background: radial-gradient(circle at 25% 20%, #22c55e, #16a34a 60%, #020617 100%);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 600; color: #ecfdf5;
+      }
+
+      .whatsapp-conversation {
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .bubble {
+        max-width: 78%;
+        padding: 6px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+      }
+
+      .bubble.cliente {
+        background: #022c22;
+        border: 1px solid #16a34a;
+        align-self: flex-start;
+      }
+
+      .bubble.taller {
+        background: #020617;
+        border: 1px solid #1f2937;
+        align-self: flex-end;
+      }
+
+      .bubble-time {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .input, .select {
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #020617;
+        padding: 5px 8px;
+        font-size: 11px;
+        color: var(--text);
+        outline: none;
+      }
+
+      .footer {
+        margin-top: 4px;
+        font-size: 10px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+      }
+
+      @media (max-width: 1024px) {
+        .app { flex-direction: column; }
+        .sidebar { width: 100%; flex-direction: row; align-items: center; }
+        .sidebar-section-title, .sidebar-footer { display: none; }
+        .nav-list { flex-direction: row; flex-wrap: wrap; }
+        .cards-row { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        .grid-main { grid-template-columns: 1fr; }
+        .tasks-row { grid-template-columns: 1fr; }
+        .whatsapp-layout { grid-template-columns: 1fr; height: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+      const SUPABASE_URL = "https://frxfhzpogtwyznjxdbnu.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_BKuNnvjRvYtzN399qIKa3w_1_LvJlxr";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      const whatsappChats = [
+        {
+          id: 101,
+          nombre: "Carlos Ramírez",
+          placa: "ABC-123",
+          hora: "10:24",
+          estado: "SEGUIMIENTO",
+          ultimoMensaje: "Sí, todo perfecto, muchas gracias.",
+          unread: 0,
+          mensajes: [
+            { de: "cliente", texto: "Buenos días, solo para confirmar si ya está listo el vehículo.", hora: "09:41" },
+            { de: "taller", texto: "Hola don Carlos, sí, ya está listo. Puede pasar a retirarlo después de la 1:00 pm.", hora: "09:45" },
+            { de: "cliente", texto: "Perfecto, muchas gracias por avisar.", hora: "09:47" },
+            { de: "taller", texto: "Con gusto. En unos minutos le enviamos la encuesta de servicio.", hora: "09:50" },
+          ],
+        },
+        {
+          id: 102,
+          nombre: "María Fernández",
+          placa: "KLM-890",
+          hora: "09:10",
+          estado: "SEGUIMIENTO",
+          ultimoMensaje: "Quedé preocupada por el atraso ayer.",
+          unread: 2,
+          mensajes: [
+            { de: "cliente", texto: "Ayer me dijeron que estaría a las 3 y lo entregaron casi a las 5.", hora: "08:41" },
+            { de: "cliente", texto: "Eso me complicó con el seguro.", hora: "08:43" },
+            { de: "taller", texto: "Comprendemos totalmente y le pedimos disculpas, revisamos internamente y le confirmamos.", hora: "08:55" },
+          ],
+        },
+        {
+          id: 103,
+          nombre: "Ana Torres",
+          placa: "CR-456",
+          hora: "08:50",
+          estado: "OK",
+          ultimoMensaje: "El color quedó muy bien, gracias.",
+          unread: 0,
+          mensajes: [
+            { de: "taller", texto: "Hola Ana, ¿cómo vio el trabajo de pintura general?", hora: "08:10" },
+            { de: "cliente", texto: "Muy bien, se ve como nuevo.", hora: "08:18" },
+            { de: "taller", texto: "Nos alegra mucho. Si desea puede dejarnos una reseña positiva.", hora: "08:23" },
+          ],
+        },
+      ];
+
+      function channelClass(canal) {
+        switch (canal) {
+          case "WhatsApp": return "channel-pill whatsapp";
+          case "Facebook": return "channel-pill facebook";
+          default: return "channel-pill web";
+        }
+      }
+
+      function prioridadClass(prioridad) {
+        const p = (prioridad || "").toLowerCase();
+        if (p === "alta") return "task-pill prioridad-alta";
+        if (p === "media") return "task-pill prioridad-media";
+        return "task-pill prioridad-baja";
+      }
+
+      function estadoClass(estado) {
+        const e = (estado || "").toLowerCase();
+        if (e === "pendiente") return "task-pill estado-pendiente";
+        if (e === "en curso") return "task-pill estado-en-curso";
+        return "task-pill estado-cerrada";
+      }
+
+      function calcKPIs(encuestas) {
+        const total = encuestas.length;
+        const promedio = total === 0
+          ? 0
+          : encuestas.reduce((s, e) => s + (e.satisfaccion || 0), 0) / total;
+        const seguimiento = encuestas.filter(e => e.estado === "SEGUIMIENTO").length;
+        const tasaEncuesta = total > 0 ? 88 : 0;
+        return {
+          promedio: promedio.toFixed(1),
+          seguimiento,
+          total,
+          tasaEncuesta,
+        };
+      }
+
+      function TasksPanel({ tareas, encuestas }) {
+        if (!tareas || tareas.length === 0) {
+          return (
+            <div className="card">
+              <div className="card-header">Tareas de seguimiento</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                Hoy no hay tareas de seguimiento creadas. Cuando haya clientes con baja satisfacción,
+                el sistema los listará aquí.
+              </div>
+            </div>
+          );
+        }
+
+        const pendientes = tareas.filter(t => t.estado === "Pendiente");
+        const enCurso = tareas.filter(t => t.estado === "En curso");
+
+        const lookup = Object.fromEntries(encuestas.map(e => [e.id, e]));
+
+        return (
+          <div className="card">
+            <div className="table-header">
+              <div className="table-title">Tareas de seguimiento para hoy</div>
+              <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                Pendientes: {pendientes.length} · En curso: {enCurso.length}
+              </div>
+            </div>
+            <div className="tasks-list">
+              {tareas.map(t => {
+                const e = lookup[t.encuesta_id];
+                const clienteInfo = e ? `${e.nombre} · ${e.placa}` : "Cliente del taller";
+                return (
+                  <div className="task-item" key={t.id}>
+                    <div className="task-main">
+                      <div className="task-title">{t.titulo}</div>
+                      <div className="task-sub">
+                        {clienteInfo}
+                        {t.fecha_limite ? ` · Atender antes de ${t.fecha_limite}` : ""}
+                      </div>
+                      {t.notas && (
+                        <div className="task-sub" style={{ fontStyle: "italic" }}>
+                          {t.notas}
+                        </div>
+                      )}
+                    </div>
+                    <div className="task-tags">
+                      <span className={prioridadClass(t.prioridad)}>
+                        Prioridad {t.prioridad}
+                      </span>
+                      <span className={estadoClass(t.estado)}>
+                        {t.estado}
+                      </span>
+                      {t.responsable && (
+                        <span className="task-sub">Resp: {t.responsable}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
+
+      function DashboardView({
+        encuestas,
+        tareas,
+        filterEstado,
+        setFilterEstado,
+        search,
+        setSearch,
+        selectedId,
+        setSelectedId,
+      }) {
+        const filtered = encuestas.filter(e => {
+          const byEstado = filterEstado === "TODOS" ? true : e.estado === filterEstado;
+          const term = search.toLowerCase();
+          const bySearch =
+            e.nombre.toLowerCase().includes(term) ||
+            e.placa.toLowerCase().includes(term) ||
+            e.servicio.toLowerCase().includes(term);
+          return byEstado && bySearch;
+        });
+
+        const selected = filtered.find(e => e.id === selectedId) || filtered[0] || null;
+
+        React.useEffect(() => {
+          if (!selected && filtered.length > 0) {
+            setSelectedId(filtered[0].id);
+          }
+        }, [filtered, selected]);
+
+        const kpis = calcKPIs(encuestas);
+
+        return (
+          <>
+            <div className="cards-row">
+              <div className="card">
+                <div className="card-header">Promedio de satisfacción de clientes</div>
+                <div className="card-value">{kpis.promedio} / 10</div>
+                <div className="card-trend">
+                  Meta sugerida: mantener este promedio por encima de 8.0.
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-header">Clientes que requieren seguimiento</div>
+                <div className="card-value">{kpis.seguimiento}</div>
+                <div className="card-trend bad">
+                  Estos son los casos que pueden generar reclamos si no se atienden a tiempo.
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-header">% de clientes que responden la encuesta</div>
+                <div className="card-value">{kpis.tasaEncuesta}%</div>
+                <div className="card-trend">
+                  Meta: que al menos 8 de cada 10 clientes contesten la encuesta.
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-header">Clientes encuestados en el período</div>
+                <div className="card-value">{kpis.total}</div>
+                <div className="card-trend">
+                  Estos datos vienen del sistema en la nube (no son planillas).
+                </div>
+              </div>
+            </div>
+
+            <div className="grid-main">
+              <div className="card table-wrapper">
+                <div className="table-header">
+                  <div className="table-title">
+                    Clientes del taller con encuesta después del servicio
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                    Total clientes en este listado: {filtered.length}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                  <select
+                    className="select"
+                    value={filterEstado}
+                    onChange={e => setFilterEstado(e.target.value)}
+                  >
+                    <option value="TODOS">Todos los estados</option>
+                    <option value="OK">Solo OK</option>
+                    <option value="SEGUIMIENTO">Solo seguimiento</option>
+                  </select>
+                  <input
+                    className="input"
+                    placeholder="Buscar cliente, placa o servicio..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
+                <div style={{ overflowY: "auto" }}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Canal</th>
+                        <th>Fecha</th>
+                        <th>Satisf.</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map(e => (
+                        <tr
+                          key={e.id}
+                          className={selected && selected.id === e.id ? "row-selected" : ""}
+                          onClick={() => setSelectedId(e.id)}
+                        >
+                          <td>{e.nombre}</td>
+                          <td>{e.servicio}</td>
+                          <td>
+                            <span className={channelClass(e.canal)}>{e.canal}</span>
+                          </td>
+                          <td>{e.fecha}</td>
+                          <td>{e.satisfaccion?.toFixed(1)}</td>
+                          <td>
+                            <span
+                              className={
+                                "status-pill " +
+                                (e.estado === "OK" ? "status-ok" : "status-follow")
+                              }
+                            >
+                              {e.estado === "OK" ? "OK" : "Seguimiento"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {filtered.length === 0 && (
+                        <tr>
+                          <td colSpan="6" style={{ paddingTop: 12 }}>
+                            No hay registros con los filtros actuales.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="card details-card">
+                {selected ? (
+                  <>
+                    <div className="details-header">
+                      <div>
+                        <div className="details-name">{selected.nombre}</div>
+                        <div className="details-plate">
+                          {selected.placa} · {selected.servicio}
+                        </div>
+                      </div>
+                      <div>
+                        <span
+                          className={
+                            "status-pill " +
+                            (selected.estado === "OK" ? "status-ok" : "status-follow")
+                          }
+                        >
+                          {selected.estado === "OK"
+                            ? "Cliente satisfecho"
+                            : "Caso en seguimiento"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="details-body">
+                      <div>
+                        <div className="details-block-title">Comentario</div>
+                        <div className="details-comment">
+                          {selected.comentario}
+                        </div>
+                      </div>
+                      <div className="details-meta-grid">
+                        <div>
+                          <div className="meta-label">Canal</div>
+                          <div className="meta-value">
+                            <span className={channelClass(selected.canal)}>
+                              {selected.canal}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="meta-label">Fecha encuesta</div>
+                          <div className="meta-value">{selected.fecha}</div>
+                        </div>
+                        <div>
+                          <div className="meta-label">Técnico</div>
+                          <div className="meta-value">{selected.tecnico}</div>
+                        </div>
+                        <div>
+                          <div className="meta-label">Satisfacción</div>
+                          <div className="meta-value">
+                            {selected.satisfaccion?.toFixed(1)} / 10
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="details-block-title">
+                          Acciones sugeridas
+                        </div>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {selected.estado === "SEGUIMIENTO" ? (
+                            <>
+                              <span className="chip">
+                                Llamar al cliente en las próximas 24 h.
+                              </span>
+                              <span className="chip">
+                                Revisar trabajo con el técnico asignado.
+                              </span>
+                              <span className="chip">
+                                Registrar resultado en el sistema.
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="chip">
+                                Agradecer y solicitar reseña positiva.
+                              </span>
+                              <span className="chip">
+                                Mantener estándar de tiempos.
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                    Seleccione un registro para ver el detalle.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="tasks-row">
+              <TasksPanel tareas={tareas} encuestas={encuestas} />
+              <div className="card">
+                <div className="card-header">Notas para la dirección</div>
+                <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                  Este bloque resume el trabajo pendiente que nace de la experiencia del
+                  cliente. La idea en producción es que cada cierre de orden genere
+                  automáticamente encuestas y tareas, para que el taller no dependa de
+                  planillas ni recordatorios manuales.
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      }
+
+      function WhatsappView({ chats }) {
+        const [selectedId, setSelectedId] = React.useState(
+          chats.length ? chats[0].id : null
+        );
+        const [search, setSearch] = React.useState("");
+
+        const filtered = chats.filter(c => {
+          const t = search.toLowerCase();
+          return (
+            c.nombre.toLowerCase().includes(t) ||
+            c.placa.toLowerCase().includes(t)
+          );
+        });
+
+        const selected =
+          filtered.find(c => c.id === selectedId) || filtered[0] || null;
+
+        React.useEffect(() => {
+          if (!selected && filtered.length > 0) {
+            setSelectedId(filtered[0].id);
+          }
+        }, [filtered, selected]);
+
+        return (
+          <div className="whatsapp-layout">
+            <div className="card">
+              <div className="table-header">
+                <div className="table-title">Bandeja WhatsApp · Taller</div>
+                <div style={{ fontSize: 10, color: "var(--muted)" }}>
+                  {filtered.length} chats
+                </div>
+              </div>
+              <input
+                className="input"
+                placeholder="Buscar por nombre o placa..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6, maxHeight: 340, overflowY: "auto" }}>
+                {filtered.map(c => (
+                  <div
+                    key={c.id}
+                    className={
+                      "whatsapp-item " + (selected && selected.id === c.id ? "active" : "")
+                    }
+                    onClick={() => setSelectedId(c.id)}
+                  >
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <div className="whatsapp-avatar">
+                        {c.nombre
+                          .split(" ")
+                          .map(p => p[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 500 }}>
+                          {c.nombre} · {c.placa}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "var(--muted)",
+                            maxWidth: 170,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {c.ultimoMensaje}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 10, color: "var(--muted)", textAlign: "right" }}>
+                      <div>{c.hora}</div>
+                      <div>
+                        {c.unread > 0 ? `${c.unread} nuevos` : "Leído"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {filtered.length === 0 && (
+                  <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                    No hay chats con ese filtro.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="whatsapp-conversation">
+              {selected ? (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: 6,
+                      borderBottom: "1px solid #020617",
+                      paddingBottom: 4,
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500 }}>
+                        {selected.nombre}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                        Placa {selected.placa} · {selected.estado}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 10, color: "var(--muted)" }}>
+                      Simulación de conversación real
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4 }}>
+                    {selected.mensajes.map((m, i) => (
+                      <div key={i} style={{ display: "flex", flexDirection: "column" }}>
+                        <div className={"bubble " + (m.de === "cliente" ? "cliente" : "taller")}>
+                          {m.texto}
+                        </div>
+                        <div
+                          className="bubble-time"
+                          style={{ alignSelf: m.de === "cliente" ? "flex-start" : "flex-end" }}
+                        >
+                          {m.hora}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      borderTop: "1px solid #020617",
+                      paddingTop: 4,
+                      fontSize: 10,
+                      color: "var(--muted)",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>
+                      En producción, esta bandeja se conecta al proveedor oficial de WhatsApp Business.
+                    </span>
+                    <span className="chip">
+                      Próximo paso: crear tarea interna desde esta vista.
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                  Seleccione un chat para ver la conversación.
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      function App() {
+        const [view, setView] = React.useState("DASHBOARD");
+        const [encuestas, setEncuestas] = React.useState([]);
+        const [tareas, setTareas] = React.useState([]);
+        const [loading, setLoading] = React.useState(true);
+        const [error, setError] = React.useState(null);
+        const [selectedId, setSelectedId] = React.useState(null);
+        const [filterEstado, setFilterEstado] = React.useState("TODOS");
+        const [search, setSearch] = React.useState("");
+
+        const isDashboard = view === "DASHBOARD";
+
+        React.useEffect(() => {
+          async function loadData() {
+            setLoading(true);
+            setError(null);
+
+            const { data: encData, error: encErr } = await supabase
+              .from("encuestas")
+              .select("*")
+              .order("fecha", { ascending: false });
+
+            if (encErr) {
+              console.error(encErr);
+              setError("No se pudieron cargar las encuestas.");
+              setEncuestas([]);
+              setTareas([]);
+              setLoading(false);
+              return;
+            }
+
+            const mappedEnc = encData.map(r => ({
+              id: r.id,
+              nombre: r.cliente_nombre,
+              placa: r.placa,
+              servicio: r.servicio,
+              canal: r.canal,
+              fecha: r.fecha,
+              tecnico: r.tecnico,
+              satisfaccion: Number(r.satisfaccion),
+              estado: r.estado,
+              comentario: r.comentario,
+            }));
+
+            setEncuestas(mappedEnc);
+            if (mappedEnc.length > 0) setSelectedId(mappedEnc[0].id);
+
+            const { data: tData, error: tErr } = await supabase
+              .from("tareas")
+              .select("*")
+              .order("fecha_creacion", { ascending: false });
+
+            if (tErr) {
+              console.error(tErr);
+              setTareas([]);
+            } else {
+              setTareas(tData || []);
+            }
+
+            setLoading(false);
+          }
+
+          loadData();
+        }, []);
+
+        return (
+          <div className="app">
+            <aside className="sidebar">
+              <div className="logo">
+                <div className="logo-badge">N</div>
+                <div>
+                  <div className="logo-text-main">NOA OMNICANAL</div>
+                  <div className="logo-text-sub">Talleres · Enderezado y pintura</div>
+                </div>
+              </div>
+              <div>
+                <div className="sidebar-section-title">Panel</div>
+                <div className="nav-list">
+                  <div
+                    className={"nav-item " + (isDashboard ? "active" : "")}
+                    onClick={() => setView("DASHBOARD")}
+                  >
+                    <span className="nav-item-left">
+                      <span className="nav-dot" />
+                      <span>Dashboard de satisfacción</span>
+                    </span>
+                    <span style={{ fontSize: 10 }}>●</span>
+                  </div>
+                  <div
+                    className={"nav-item " + (!isDashboard ? "active" : "")}
+                    onClick={() => setView("WHATSAPP")}
+                  >
+                    <span className="nav-item-left">
+                      <span className="nav-dot" />
+                      <span>Bandeja WhatsApp NOA</span>
+                    </span>
+                    <span style={{ fontSize: 10 }}>💬</span>
+                  </div>
+                </div>
+              </div>
+              <div className="sidebar-footer">
+                Demo funcional omnicanal
+                <div className="sidebar-tagline">
+                  No somos un software, somos productividad inteligente.
+                </div>
+              </div>
+            </aside>
+
+            <main className="content">
+              <div className="topbar">
+                <div className="topbar-title-group">
+                  <div className="topbar-title">
+                    {isDashboard
+                      ? "Panel de experiencia · Taller Demo"
+                      : "Bandeja WhatsApp NOA · Simulación"}
+                  </div>
+                  <div className="topbar-subtitle">
+                    {isDashboard
+                      ? "Resumen para la dirección: cómo están quedando los clientes y cuántos requieren seguimiento."
+                      : "Vista tipo WhatsApp Business conectada al cerebro omnicanal de NOA."}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <span className="badge">
+                    {loading ? "Cargando información..." : "Datos desde Supabase (nube)"}
+                  </span>
+                  <span className="badge badge-accent">
+                    Demo omnicanal · Taller automotriz
+                  </span>
+                </div>
+              </div>
+
+              {isDashboard ? (
+                error ? (
+                  <div className="card">{error}</div>
+                ) : (
+                  <DashboardView
+                    encuestas={encuestas}
+                    tareas={tareas}
+                    filterEstado={filterEstado}
+                    setFilterEstado={setFilterEstado}
+                    search={search}
+                    setSearch={setSearch}
+                    selectedId={selectedId}
+                    setSelectedId={setSelectedId}
+                  />
+                )
+              ) : (
+                <WhatsappView chats={whatsappChats} />
+              )}
+
+              <div className="footer">
+                <span>
+                  NOA centraliza encuestas, tareas y conversaciones en un solo panel.
+                </span>
+                <span>Demo Taller SyS · Omnicanal NOA</span>
+              </div>
+            </main>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>

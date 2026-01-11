@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tablero Ejecutivo Taller SyS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #f5f5f7;
+      color: #111827;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 16px 0;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .kpi-card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e5e7eb;
+    }
+
+    .kpi-card.kpi-danger {
+      border-color: #f97373;
+      background: #fef2f2;
+    }
+
+    .kpi-card.kpi-warning {
+      border-color: #facc15;
+      background: #fffbeb;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .tabs {
+      display: inline-flex;
+      gap: 8px;
+      margin: 8px 0 12px 0;
+      padding: 4px;
+      background: #e5e7eb;
+      border-radius: 999px;
+    }
+
+    .tab-button {
+      border: none;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      cursor: pointer;
+      background: transparent;
+      color: #374151;
+    }
+
+    .tab-button.active {
+      background: #1d4ed8;
+      color: white;
+    }
+
+    .status {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 6px;
+      min-height: 18px;
+    }
+
+    .status.error {
+      color: #b91c1c;
+    }
+
+    .table-wrapper {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      background: #f3f4f6;
+    }
+
+    th,
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      font-weight: 600;
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    tbody tr:hover {
+      background: #eef2ff;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 16px 10px;
+      color: #6b7280;
+    }
+
+    .panel-encuestas {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      font-size: 13px;
+    }
+
+    .panel-encuestas h2 {
+      margin: 0 0 6px 0;
+      font-size: 15px;
+    }
+
+    .panel-encuestas p {
+      margin: 2px 0;
+    }
+
+    @media (max-width: 900px) {
+      .kpi-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      body {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .kpi-row {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th,
+      td {
+        padding: 6px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tablero Ejecutivo Taller SyS</h1>
+
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Tareas totales</div>
+        <div class="kpi-value" id="kpi-total">-</div>
+      </div>
+      <div class="kpi-card kpi-danger">
+        <div class="kpi-label">Críticas (Alta + Pend.)</div>
+        <div class="kpi-value" id="kpi-criticos">-</div>
+      </div>
+      <div class="kpi-card kpi-warning">
+        <div class="kpi-label">Atrasadas</div>
+        <div class="kpi-value" id="kpi-atrasados">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Satisfacción promedio</div>
+        <div class="kpi-value" id="kpi-satisfaccion">-</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-button active" data-tipo="tablero">
+        Tablero completo
+      </button>
+      <button class="tab-button" data-tipo="criticos">Críticos</button>
+      <button class="tab-button" data-tipo="atrasados">Atrasados</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Placa</th>
+            <th>Servicio</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Días abierta</th>
+            <th>Días restantes</th>
+            <th>Resumen estado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body">
+          <tr>
+            <td class="empty" colspan="9">Cargando datos...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-encuestas">
+      <h2>Resumen de encuestas de satisfacción</h2>
+      <p id="encuestas-resumen">Cargando...</p>
+      <p id="encuestas-bajas"></p>
+    </div>
+  </div>
+
+  <script>
+    const FUNCTION_URL = "https://frxfhzpogtwyznjxdbnu.supabase.co/functions/v1/taller-dashboard";
+
+    async function fetchTareas(tipo) {
+      const url = FUNCTION_URL + "?tipo=" + encodeURIComponent(tipo);
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        throw new Error("Error HTTP " + res.status);
+      }
+
+      const json = await res.json();
+
+      if (!json.ok) {
+        throw new Error(json.error || "Error en función");
+      }
+
+      return json.tareas || [];
+    }
+
+    function renderTabla(tareas) {
+      const tbody = document.getElementById("tabla-body");
+      tbody.innerHTML = "";
+
+      if (!tareas || tareas.length === 0) {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td class="empty" colspan="9">Sin datos para mostrar.</td>';
+        tbody.appendChild(tr);
+        return;
+      }
+
+      for (let i = 0; i < tareas.length; i++) {
+        const t = tareas[i];
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + (t.tarea_id || "") + "</td>" +
+          "<td>" + (t.cliente_nombre || "") + "</td>" +
+          "<td>" + (t.placa || "") + "</td>" +
+          "<td>" + (t.servicio || "") + "</td>" +
+          "<td>" + (t.prioridad || "") + "</td>" +
+          "<td>" + (t.estado || "") + "</td>" +
+          "<td>" + (t.dias_abierta != null ? t.dias_abierta : "") + "</td>" +
+          "<td>" + (t.dias_restantes != null ? t.dias_restantes : "") + "</td>" +
+          "<td>" + (t.estado_resumen || "") + "</td>";
+        tbody.appendChild(tr);
+      }
+    }
+
+    function updateEncuestasPanel(tareas) {
+      const resumen = document.getElementById("encuestas-resumen");
+      const bajas = document.getElementById("encuestas-bajas");
+
+      if (!tareas || tareas.length === 0) {
+        resumen.textContent =
+          "No hay tareas registradas todavía en el periodo consultado.";
+        bajas.textContent = "";
+        return;
+      }
+
+      const conEncuesta = [];
+      for (let i = 0; i < tareas.length; i++) {
+        const t = tareas[i];
+        if (typeof t.satisfaccion === "number") {
+          conEncuesta.push(t);
+        }
+      }
+
+      const bajasSat = [];
+      const muyBajas = [];
+
+      for (let i = 0; i < conEncuesta.length; i++) {
+        const t = conEncuesta[i];
+        if (t.satisfaccion < 7) {
+          bajasSat.push(t);
+        }
+        if (t.satisfaccion <= 4) {
+          muyBajas.push(t);
+        }
+      }
+
+      if (conEncuesta.length === 0) {
+        resumen.textContent =
+          "Aún no se han registrado encuestas de satisfacción para estas tareas.";
+        bajas.textContent = "";
+        return;
+      }
+
+      resumen.textContent =
+        "Se han recibido " + conEncuesta.length +
+        " encuestas de satisfacción (sobre " + tareas.length +
+        " tareas activas).";
+
+      bajas.textContent =
+        "De ellas, " + bajasSat.length +
+        " muestran satisfacción baja (menor a 7) y " +
+        muyBajas.length +
+        " son casos críticos (menor o igual a 4) que requieren seguimiento directo.";
+    }
+
+    async function loadKPIs() {
+      try {
+        const tablero = await fetchTareas("tablero");
+        const criticos = await fetchTareas("criticos");
+        const atrasados = await fetchTareas("atrasados");
+
+        document.getElementById("kpi-total").textContent = tablero.length;
+        document.getElementById("kpi-criticos").textContent = criticos.length;
+        document.getElementById("kpi-atrasados").textContent = atrasados.length;
+
+        const sats = [];
+        for (let i = 0; i < tablero.length; i++) {
+          const v = tablero[i].satisfaccion;
+          if (typeof v === "number") {
+            sats.push(v);
+          }
+        }
+
+        let avgText = "-";
+        if (sats.length > 0) {
+          let sum = 0;
+          for (let i = 0; i < sats.length; i++) {
+            sum += sats[i];
+          }
+          const avg = sum / sats.length;
+          avgText = avg.toFixed(1) + " / 10";
+        }
+        document.getElementById("kpi-satisfaccion").textContent = avgText;
+
+        updateEncuestasPanel(tablero);
+      } catch (err) {
+        console.error("Error cargando KPIs:", err);
+      }
+    }
+
+    async function loadTablero(tipo) {
+      const statusEl = document.getElementById("status");
+      statusEl.classList.remove("error");
+      statusEl.textContent = "Cargando datos...";
+
+      try {
+        const tareas = await fetchTareas(tipo);
+        renderTabla(tareas);
+
+        if (tipo === "tablero") {
+          updateEncuestasPanel(tareas);
+        }
+
+        statusEl.textContent = "";
+      } catch (err) {
+        console.error("Error cargando tablero:", err);
+        statusEl.textContent = "Error al cargar datos.";
+        statusEl.classList.add("error");
+        renderTabla([]);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const tabs = document.querySelectorAll(".tab-button");
+      for (let i = 0; i < tabs.length; i++) {
+        const btn = tabs[i];
+        btn.addEventListener("click", function () {
+          for (let j = 0; j < tabs.length; j++) {
+            tabs[j].classList.remove("active");
+          }
+          btn.classList.add("active");
+          const tipo = btn.getAttribute("data-tipo") || "tablero";
+          loadTablero(tipo);
+        });
+      }
+
+      loadKPIs();
+      loadTablero("tablero");
+    });
+  </script>
+</body>
+</html>

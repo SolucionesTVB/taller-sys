@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Taller SyS — Inbox</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;background:#0b1020;color:#e7eaf3}
+    header{padding:16px 20px;background:#0f1733;border-bottom:1px solid #1b2a5a}
+    h1{margin:0;font-size:16px}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    .card{background:#111b3f;border:1px solid #1b2a5a;border-radius:14px;padding:14px}
+    input,button{background:#0b1020;color:#e7eaf3;border:1px solid #24356f;border-radius:10px;padding:10px 12px;font-size:13px}
+    button{cursor:pointer}
+    button.primary{background:#2a56ff;border-color:#2a56ff}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .item{background:#0f1733;border:1px solid #1b2a5a;border-radius:14px;padding:12px;margin-top:10px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    .muted{opacity:.75}
+    pre{white-space:pre-wrap;word-break:break-word}
+  </style>
+</head>
+<body>
+<header>
+  <h1>🛠️ Taller SyS — Inbox (Supabase Live)</h1>
+  <div class="muted" style="margin-top:6px">Pegá SUPABASE_URL y SUPABASE_ANON_KEY y cargá las últimas 25 entradas.</div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="row">
+      <input id="url" placeholder="SUPABASE_URL (https://xxxxx.supabase.co)" style="flex:1;min-width:280px"/>
+      <input id="key" placeholder="SUPABASE_ANON_KEY (jwt…)" style="flex:1;min-width:280px"/>
+      <button class="primary" id="save">Guardar</button>
+      <button id="load">Cargar</button>
+    </div>
+
+    <div id="status" class="muted" style="margin-top:10px"></div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const status = (t)=>$('status').textContent=t;
+
+  function loadCfg(){
+    const cfg = JSON.parse(localStorage.getItem('taller_cfg')||'{}');
+    $('url').value = cfg.url||'';
+    $('key').value = cfg.key||'';
+    return cfg;
+  }
+  function saveCfg(){
+    const cfg = { url: $('url').value.trim(), key: $('key').value.trim() };
+    localStorage.setItem('taller_cfg', JSON.stringify(cfg));
+    status('Config guardada ✅');
+    return cfg;
+  }
+
+  async function sbGet(){
+    const cfg = loadCfg();
+    if(!cfg.url || !cfg.key) throw new Error('Falta URL o ANON KEY');
+    const endpoint = cfg.url.replace(/\/$/,'') + '/rest/v1/wa_entradas?select=id,created_at,telefono,mensaje,ia_asignado,ia_clasificacion&order=created_at.desc&limit=25';
+    const res = await fetch(endpoint, {
+      method:'GET',
+      headers:{
+        'apikey': cfg.key,
+        'Authorization': 'Bearer ' + cfg.key
+      }
+    });
+    const txt = await res.text();
+    if(!res.ok) throw new Error(res.status + ': ' + txt);
+    return JSON.parse(txt);
+  }
+
+  function render(rows){
+    const list = $('list');
+    list.innerHTML='';
+    rows.forEach(r=>{
+      const el = document.createElement('div');
+      el.className='item';
+      el.innerHTML = `
+        <div class="mono"><b>#${r.id}</b> — ${r.telefono||''} <span class="muted">(${r.created_at||''})</span></div>
+        <div style="margin-top:6px">${String(r.mensaje||'').replace(/</g,'&lt;')}</div>
+        <div class="muted" style="margin-top:6px">Asignado: <b>${r.ia_asignado||'—'}</b></div>
+        <div class="muted" style="margin-top:6px">IA:</div>
+        <pre class="mono">${JSON.stringify(r.ia_clasificacion||{}, null, 2)}</pre>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  $('save').onclick = saveCfg;
+  $('load').onclick = async ()=>{
+    try{
+      status('Cargando…');
+      const rows = await sbGet();
+      status('OK ✅');
+      render(rows);
+    }catch(e){
+      status('Error: ' + e.message);
+    }
+  };
+
+  loadCfg();
+</script>
+</body>
+</html>

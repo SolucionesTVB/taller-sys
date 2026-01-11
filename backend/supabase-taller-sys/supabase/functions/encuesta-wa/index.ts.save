@@ -1,0 +1,140 @@
+cd ~/supabase-taller-sys
+nano supabase/functions/encuesta-wa/index.ts
+/ 
+supabase/functions/encuesta-wa/index.ts
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// Variables de entorno (definidas en la consola del proyecto)
+const PROJECT_URL = Deno.env.get("URL")!;
+const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!;
+
+// Cliente backend (service role, solo del lado del servidor)
+const client = createClient(PROJECT_URL, SERVICE_ROLE_KEY);
+
+// CORS para futuras integraciones (si se llama desde otros orígenes)
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req: Request): Promise<Response> => {
+  // Preflight CORS
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  // Solo permitimos POST
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ ok: false, error: "Método no permitido" }),
+      {
+        status: 405,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      },
+    );
+  }
+
+  try {
+    // 1️⃣ Buscar encuestas pendientes
+    const { data: pendientes, error } = await client
+      .from("wa_encuestas")
+      .select("*")
+      .eq("estado_envio", "pendiente")
+      .order("created_at", { ascending: true })
+      .limit(20);
+
+    if (error) {
+      console.error("Error consultando wa_encuestas:", error);
+      return new Response(
+        JSON.stringify({ ok: false, error: error.message }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        },
+      );
+    }
+
+    if (!pendientes || pendientes.length === 0) {
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          mensaje: "No hay encuestas pendientes",
+          procesadas: 0,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        },
+      );
+    }
+
+    // 2️⃣ Simulación de envío por WhatsApp y actualización de estado
+    const resultados: Array<{ id: number; estado: string }> = [];
+
+    for (const encuesta of pendientes) {
+      const intentosPrevios = encuesta.intentos ?? 0;
+
+      // 🔴 Aquí más adelante se integra el proveedor real de WhatsApp.
+      // Por ahora solo marcamos como "enviado" para probar el flujo.
+
+      const { error: updError } = await client
+        .from("wa_encuestas")
+        .update({
+          estado_envio: "enviado",
+          intentos: intentosPrevios + 1,
+          sent_at: new Date().toISOString(),
+          error_detalle: null,
+        })
+        .eq("id", encuesta.id);
+
+      if (updError) {
+        console.error("Error actualizando wa_encuestas:", updError);
+        resultados.push({ id: encuesta.id, estado: "error" });
+        continue;
+      }
+
+      resultados.push({ id: encuesta.id, estado: "enviado" });
+    }
+
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        procesadas: resultados.length,
+        resultados,
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      },
+    );
+  } catch (e) {
+    console.error("Error inesperado en encuesta-wa:", e);
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: "Error interno encuesta-wa",
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      },
+    );
+  }
+});
+

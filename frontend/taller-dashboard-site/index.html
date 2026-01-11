@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tablero Ejecutivo Taller SyS</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 20px;
+      background: #f3f4f6;
+    }
+    h1 {
+      margin-bottom: 8px;
+    }
+    .buttons {
+      margin: 12px 0 20px;
+    }
+    button {
+      margin-right: 8px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      background: white;
+    }
+    button.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+    #status {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+    th {
+      background: #f9fafb;
+      text-align: left;
+    }
+    tr:nth-child(even) {
+      background: #f9fafb;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tablero Ejecutivo Taller SyS</h1>
+  <div class="buttons">
+    <button data-tipo="tablero" class="active">Tablero completo</button>
+    <button data-tipo="criticos">Críticos</button>
+    <button data-tipo="atrasados">Atrasados</button>
+  </div>
+  <div id="status">Listo.</div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Placa</th>
+        <th>Servicio</th>
+        <th>Prioridad</th>
+        <th>Estado</th>
+        <th>Días abierta</th>
+        <th>Días restantes</th>
+        <th>Resumen estado</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr><td colspan="9">Cargando...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    const FUNCTION_URL = "https://frxfhzpogtwyznjxdbnu.supabase.co/functions/v1/taller-dashboard";
+    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZyeGZoenBvZ3R3eXpuanhkYm51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MzI5MzYsImV4cCI6MjA3NTUwODkzNn0.qUWoWsf2_X12HIAjw1fMhKUiN2aqZW_9r2sQD4bxOTo";
+
+    const statusEl = document.getElementById("status");
+    const tbody = document.getElementById("tbody");
+    const buttons = document.querySelectorAll("button[data-tipo]");
+
+    async function loadTablero(tipo) {
+      try {
+        statusEl.textContent = "Cargando " + tipo + "...";
+        tbody.innerHTML = '<tr><td colspan="9">Cargando...</td></tr>';
+
+        const res = await fetch(FUNCTION_URL + "?tipo=" + tipo, {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + ANON_KEY,
+            "apikey": ANON_KEY,
+            "Content-Type": "application/json"
+          },
+          body: "{}"
+        });
+
+        const json = await res.json();
+
+        if (!res.ok || !json.ok) {
+          console.error("Error en respuesta:", json);
+          statusEl.textContent = "Error: " + (json.error || ("HTTP " + res.status));
+          tbody.innerHTML = '<tr><td colspan="9">Error al cargar datos.</td></tr>';
+          return;
+        }
+
+        const tareas = json.tareas || [];
+        statusEl.textContent = "Vista: " + tipo + " | Total: " + tareas.length;
+
+        if (tareas.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9">Sin registros.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = "";
+        for (const t of tareas) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${t.tarea_id}</td>
+            <td>${t.cliente_nombre || ""}</td>
+            <td>${t.placa || ""}</td>
+            <td>${t.servicio || ""}</td>
+            <td>${t.prioridad || ""}</td>
+            <td>${t.estado || ""}</td>
+            <td>${t.dias_abierta ?? ""}</td>
+            <td>${t.dias_restantes ?? ""}</td>
+            <td>${t.estado_resumen || ""}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      } catch (e) {
+        console.error(e);
+        statusEl.textContent = "Error inesperado cargando datos.";
+        tbody.innerHTML = '<tr><td colspan="9">Error inesperado.</td></tr>';
+      }
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        buttons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tipo = btn.getAttribute("data-tipo");
+        loadTablero(tipo);
+      });
+    });
+
+    // carga inicial
+    loadTablero("tablero");
+  </script>
+</body>
+</html>

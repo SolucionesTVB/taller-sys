@@ -1,0 +1,113 @@
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+serve(async (req) => {
+  try {
+    const payload = await req.json();
+
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!SUPABASE_URL || !SERVICE_ROLE) {
+      return new Response(JSON.stringify({ ok: false, error: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
+
+    const TALLER_NUMBER = normPhone(Deno.env.get("TALLER_NUMBER"));
+    const inbound = normPhone(pickInboundPhone(payload));
+
+    // ---- BLINDAJES DUROS ----
+    if (!inbound) return ok("ignored:no_inbound");
+    if (isFromMe(payload)) return ok("ignored:fromMe");
+    if (TALLER_NUMBER && inbound === TALLER_NUMBER) return ok("ignored:same_number");
+
+    // ---- GUARDAR ENTRADA ----
+    await supabase.from("wa_entradas").insert({
+      telefono: inbound,
+      payload,
+      source: "wasender",
+    });
+
+    // ---- ACK ATÓMICO ----
+    // Requiere UNIQUE: public.wa_ack_state(telefono)
+    const { error: ackErr } = await supabase
+      .from("wa_ack_state")
+      .insert({ telefono: inbound });
+
+    if (ackErr) {
+      const code = (ackErr as any)?.code;
+      if (code === "23505") {
+        return ok("skipped:already_acked");
+      }
+      const msg = String((ackErr as any)?.message ?? ackErr);
+      return new Response(JSON.stringify({ ok: false, error: "ack_state_insert_failed", detail: msg }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // ---- ENVIAR RESPUESTA ----
+    return ok("ingested_only");
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+});
+
+function ok(reason: string) {
+  return new Response(JSON.stringify({ ok: true, reason }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function normPhone(v: unknown): string {
+  return String(v ?? "").replace(/[^\d]/g, "");
+}
+
+function pickInboundPhone(p: any): string {
+  return (
+    p?.from ??
+    p?.phone ??
+    p?.sender?.phone ??
+    p?.sender?.id ??
+    p?.data?.from ??
+    p?.data?.phone ??
+    ""
+  );
+}
+
+function isFromMe(p: any): boolean {
+  return p?.fromMe === true || p?.data?.fromMe === true;
+}
+
+async function sendAck(payload: any, telefono: string): Promise<boolean> {
+  const sessionId = payload?.sessionId || payload?.session_id;
+  if (!sessionId) return false;
+
+  const token = Deno.env.get("WASENDER_PAT");
+  if (!token) return false;
+
+  // Si tu endpoint exacto es otro, lo ajustamos en el Paso 3.
+  const url = "https://api.wasender.com/v1/messages/send";
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      sessionId,
+      to: telefono,
+      text: "Hola 👋 Ya recibimos tu mensaje. En breve te atendemos.",
+    }),
+  });
+
+  return res.ok;
+}

@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NOA Omnicanal · Demo Taller Automotriz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Fuente -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #020617;
+        --bg-alt: #0b1120;
+        --panel: #020617;
+        --panel-soft: #020617;
+        --panel-hover: #020617;
+        --accent: #38bdf8;
+        --accent-strong: #22c55e;
+        --accent-soft: rgba(56, 189, 248, 0.18);
+        --danger: #f97373;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --border: #1f2937;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #0b1120 0, #020617 40%, #020617 100%);
+        color: var(--text);
+      }
+
+      .app {
+        min-height: 100vh;
+        display: flex;
+      }
+
+      /* SIDEBAR NOA */
+
+      .sidebar {
+        width: 260px;
+        background: radial-gradient(circle at top, #020617 0, #020617 35%, #000 100%);
+        border-right: 1px solid #111827;
+        padding: 18px 18px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logo-badge {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 20%, #38bdf8, #1d4ed8 60%, #020617 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 18px;
+        box-shadow: 0 0 18px rgba(56, 189, 248, 0.7);
+      }
+
+      .logo-text-main {
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        font-size: 13px;
+        text-transform: uppercase;
+      }
+
+      .logo-text-sub {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .sidebar-section-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--muted);
+        margin-top: 8px;
+        margin-bottom: 4px;
+      }
+
+      .nav-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .nav-item {
+        padding: 8px 9px;
+        border-radius: 9px;
+        font-size: 12px;
+        color: var(--muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: background 0.15s, color 0.15s, transform 0.1s, box-shadow 0.1s;
+        border: 1px solid transparent;
+      }
+
+      .nav-item-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #111827;
+      }
+
+      .nav-item.active {
+        background: var(--accent-soft);
+        color: var(--text);
+        border-color: rgba(56, 189, 248, 0.7);
+        box-shadow: 0 0 12px rgba(56, 189, 248, 0.75);
+      }
+
+      .nav-item.active .nav-dot {
+        background: var(--accent);
+        box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+      }
+
+      .nav-item:hover {
+        background: #020617;
+        transform: translateY(-1px);
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        font-size: 10px;
+        color: var(--muted);
+        border-top: 1px solid #111827;
+        padding-top: 8px;
+      }
+
+      .sidebar-tagline {
+        font-size: 11px;
+        margin-top: 4px;
+        color: var(--accent);
+      }
+
+      /* CONTENT */
+
+      .content {
+        flex: 1;
+        padding: 18px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .topbar-title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .topbar-title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .topbar-subtitle {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .badge {
+        font-size: 11px;
+        padding: 4px 9px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        background: #020617;
+      }
+
+      .badge-accent {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(15, 23, 42, 0.9);
+      }
+
+      .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .select,
+      .input {
+        background: #020617;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: 11px;
+        color: var(--text);
+        outline: none;
+      }
+
+      .select:focus,
+      .input:focus {
+        border-color: var(--accent);
+      }
+
+      .cards-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .card {
+        background: radial-gradient(circle at top left, #020617 0, #020617 40%, #020617 100%);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 12px;
+        box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
+      }
+
+      .card-header {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+
+      .card-value {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 1px;
+      }
+
+      .card-trend {
+        font-size: 11px;
+        color: var(--accent-strong);
+      }
+
+      .card-trend.bad {
+        color: var(--danger);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 2.3fr 1.5fr;
+        gap: 14px;
+        align-items: stretch;
+      }
+
+      .table-wrapper {
+        height: 330px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .table-title {
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      thead {
+        position: sticky;
+        top: 0;
+        background: #020617;
+        z-index: 1;
+      }
+
+      th,
+      td {
+        padding: 6px 5px;
+        text-align: left;
+        border-bottom: 1px solid #020617;
+      }
+
+      th {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+      }
+
+      tbody tr {
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+
+      tbody tr:nth-child(even) {
+        background: #020617;
+      }
+
+      tbody tr:hover {
+        background: #020617;
+      }
+
+      .row-selected {
+        background: rgba(56, 189, 248, 0.16) !important;
+      }
+
+      .status-pill {
+        font-size: 10px;
+        padding: 3px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .status-ok {
+        border-color: rgba(34, 197, 94, 0.5);
+        color: var(--accent-strong);
+        background: rgba(22, 163, 74, 0.12);
+      }
+
+      .status-follow {
+        border-color: rgba(248, 113, 113, 0.6);
+        color: #fecaca;
+        background: rgba(185, 28, 28, 0.16);
+      }
+
+      .channel-pill {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+
+      .channel-pill.whatsapp {
+        border-color: #22c55e;
+        color: #bbf7d0;
+      }
+
+      .channel-pill.facebook {
+        border-color: #3b82f6;
+        color: #bfdbfe;
+      }
+
+      .channel-pill.web {
+        border-color: #38bdf8;
+        color: #e0f2fe;
+      }
+
+      .details-card {
+        height: 330px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 6px;
+      }
+
+      .details-name {
+        font-size: 15px;
+        font-weight: 500;
+      }
+
+      .details-plate {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .details-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-size: 12px;
+      }
+
+      .details-block-title {
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+      }
+
+      .details-comment {
+        padding: 8px;
+        border-radius: 10px;
+        background: #020617;
+        border: 1px dashed var(--border);
+      }
+
+      .details-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .meta-item-label {
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      .meta-item-value {
+        font-size: 12px;
+      }
+
+      .chip {
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        display: inline-block;
+      }
+
+      .footer {
+        margin-top: 4px;
+        font-size: 10px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .footer-right {
+        font-size: 10px;
+        color: var(--accent);
+      }
+
+      /* WHATSAPP NOA FUTURISTA */
+
+      .whatsapp-layout {
+        display: grid;
+        grid-template-columns: 1.8fr 2.4fr;
+        gap: 12px;
+        height: 420px;
+      }
+
+      .whatsapp-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .whatsapp-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .whatsapp-search {
+        width: 100%;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #020617;
+        padding: 5px 9px;
+        font-size: 11px;
+        color: var(--text);
+        outline: none;
+      }
+
+      .whatsapp-item {
+        padding: 8px;
+        border-radius: 10px;
+        border: 1px solid #020617;
+        background: #020617;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        cursor: pointer;
+        transition: background 0.12s, border 0.12s, transform 0.08s;
+      }
+
+      .whatsapp-item-left {
+        display: flex;
+        gap: 8px;
+      }
+
+      .whatsapp-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 25% 20%, #22c55e, #16a34a 60%, #020617 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: #ecfdf5;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+      }
+
+      .whatsapp-item-main {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .whatsapp-name {
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .whatsapp-last {
+        font-size: 11px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 170px;
+      }
+
+      .whatsapp-item-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      .whatsapp-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+      }
+
+      .whatsapp-badge.unread {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(56, 189, 248, 0.12);
+      }
+
+      .whatsapp-item.active {
+        border-color: rgba(56, 189, 248, 0.7);
+        background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.2), #020617 55%);
+        box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+        transform: translateY(-1px);
+      }
+
+      .whatsapp-conversation {
+        display: flex;
+        flex-direction: column;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
+        padding: 10px;
+      }
+
+      .whatsapp-conv-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #020617;
+        padding-bottom: 6px;
+        margin-bottom: 6px;
+      }
+
+      .whatsapp-conv-name {
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .whatsapp-conv-meta {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .whatsapp-conv-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 4px 0;
+        overflow-y: auto;
+        max-height: 300px;
+      }
+
+      .bubble {
+        max-width: 76%;
+        padding: 7px 9px;
+        border-radius: 12px;
+        font-size: 12px;
+        position: relative;
+      }
+
+      .bubble.cliente {
+        background: #022c22;
+        border: 1px solid #16a34a;
+        align-self: flex-start;
+      }
+
+      .bubble.taller {
+        background: #020617;
+        border: 1px solid #1f2937;
+        align-self: flex-end;
+      }
+
+      .bubble-time {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .whatsapp-conv-footer {
+        border-top: 1px solid #020617;
+        padding-top: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      .whatsapp-conv-footer span.chip {
+        border-radius: 999px;
+      }
+
+      @media (max-width: 1024px) {
+        .app {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          flex-direction: row;
+          align-items: center;
+        }
+
+        .sidebar-section-title,
+        .sidebar-footer {
+          display: none;
+        }
+
+        .nav-list {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+
+        .content {
+          padding: 14px;
+        }
+
+        .cards-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .whatsapp-layout {
+          grid-template-columns: 1fr;
+          height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- React + Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+      const demoData = [
+        {
+          id: 1,
+          nombre: "Carlos Ramírez",
+          placa: "ABC-123",
+          servicio: "Enderezado y pintura lateral",
+          canal: "WhatsApp",
+          fecha: "2025-11-15",
+          tecnico: "Luis Vega",
+          satisfaccion: 9.2,
+          estado: "OK",
+          comentario:
+            "Excelente servicio, el carro quedó como nuevo. Me avisaron en cada paso.",
+        },
+        {
+          id: 2,
+          nombre: "María Fernández",
+          placa: "KLM-890",
+          servicio: "Pintura defensa trasera",
+          canal: "Facebook",
+          fecha: "2025-11-14",
+          tecnico: "José Navarro",
+          satisfaccion: 6.1,
+          estado: "SEGUIMIENTO",
+          comentario:
+            "El trabajo quedó bien, pero la entrega se atrasó y nadie me avisó.",
+        },
+        {
+          id: 3,
+          nombre: "Javier Soto",
+          placa: "ZYX-777",
+          servicio: "Reparación y pintura frontal",
+          canal: "Web",
+          fecha: "2025-11-13",
+          tecnico: "Luis Vega",
+          satisfaccion: 8.5,
+          estado: "OK",
+          comentario: "Buena experiencia, solo mejoraría el espacio de espera.",
+        },
+        {
+          id: 4,
+          nombre: "Ana Torres",
+          placa: "CR-456",
+          servicio: "Pintura general",
+          canal: "WhatsApp",
+          fecha: "2025-11-12",
+          tecnico: "María Solís",
+          satisfaccion: 5.4,
+          estado: "SEGUIMIENTO",
+          comentario:
+            "El color quedó bien, pero noté pequeños detalles en puertas y tapa.",
+        },
+      ];
+
+      const whatsappChats = [
+        {
+          id: 101,
+          nombre: "Carlos Ramírez",
+          placa: "ABC-123",
+          canal: "WhatsApp",
+          hora: "10:24",
+          estado: "SEGUIMIENTO",
+          ultimoMensaje: "Sí, todo perfecto, muchas gracias.",
+          unread: 0,
+          mensajes: [
+            {
+              de: "cliente",
+              texto: "Buenos días, solo para confirmar si ya está listo el vehículo.",
+              hora: "09:41",
+            },
+            {
+              de: "taller",
+              texto: "Hola don Carlos, sí, ya está listo. Puede pasar a retirarlo después de la 1:00 pm.",
+              hora: "09:45",
+            },
+            {
+              de: "cliente",
+              texto: "Perfecto, muchas gracias por avisar.",
+              hora: "09:47",
+            },
+            {
+              de: "taller",
+              texto: "Con gusto. En unos minutos le enviamos la encuesta de servicio.",
+              hora: "09:50",
+            },
+          ],
+        },
+        {
+          id: 102,
+          nombre: "María Fernández",
+          placa: "KLM-890",
+          canal: "WhatsApp",
+          hora: "09:10",
+          estado: "SEGUIMIENTO",
+          ultimoMensaje: "Quedé preocupada por el atraso ayer.",
+          unread: 2,
+          mensajes: [
+            {
+              de: "cliente",
+              texto: "Ayer me dijeron que estaría a las 3 y lo entregaron casi a las 5.",
+              hora: "08:41",
+            },
+            {
+              de: "cliente",
+              texto: "Eso me complicó con el seguro.",
+              hora: "08:43",
+            },
+            {
+              de: "taller",
+              texto: "Comprendemos totalmente y le pedimos disculpas, revisamos internamente y le confirmamos.",
+              hora: "08:55",
+            },
+          ],
+        },
+        {
+          id: 103,
+          nombre: "Ana Torres",
+          placa: "CR-456",
+          canal: "WhatsApp",
+          hora: "08:50",
+          estado: "OK",
+          ultimoMensaje: "El color quedó muy bien, gracias.",
+          unread: 0,
+          mensajes: [
+            {
+              de: "taller",
+              texto: "Hola Ana, ¿cómo vio el trabajo de pintura general?",
+              hora: "08:10",
+            },
+            {
+              de: "cliente",
+              texto: "Muy bien, se ve como nuevo.",
+              hora: "08:18",
+            },
+            {
+              de: "taller",
+              texto: "Nos alegra mucho. Si desea puede dejarnos una reseña positiva.",
+              hora: "08:23",
+            },
+          ],
+        },
+      ];
+
+      function calcKPIs(data) {
+        const total = data.length;
+        const prom =
+          total === 0
+            ? 0
+            : data.reduce((sum, c) => sum + c.satisfaccion, 0) / total;
+        const seguimiento = data.filter((c) => c.estado === "SEGUIMIENTO").length;
+        const tasaEncuesta = 88;
+        return {
+          promedio: prom.toFixed(1),
+          seguimiento,
+          total,
+          tasaEncuesta,
+        };
+      }
+
+      function channelClass(canal) {
+        switch (canal) {
+          case "WhatsApp":
+            return "channel-pill whatsapp";
+          case "Facebook":
+            return "channel-pill facebook";
+          default:
+            return "channel-pill web";
+        }
+      }
+
+      function DashboardView({ data, filterEstado, setFilterEstado, search, setSearch, selectedId, setSelectedId }) {
+        const filtered = data.filter((item) => {
+          const matchEstado =
+            filterEstado === "TODOS" ? true : item.estado === filterEstado;
+          const term = search.toLowerCase();
+          const matchSearch =
+            item.nombre.toLowerCase().includes(term) ||
+            item.placa.toLowerCase().includes(term) ||
+            item.servicio.toLowerCase().includes(term);
+          return matchEstado && matchSearch;
+        });
+
+        const selected =
+          filtered.find((c) => c.id === selectedId) || filtered[0] || null;
+
+        React.useEffect(() => {
+          if (!selected && filtered.length > 0) {
+            setSelectedId(filtered[0].id);
+          }
+        }, [filtered, selected]);
+
+        const kpis = calcKPIs(data);
+
+        return (
+          <>
+            <div className="cards-row">
+              <div className="card">
+                <div className="card-header">Satisfacción promedio</div>
+                <div className="card-value">{kpis.promedio} / 10</div>
+                <div className="card-trend">+0.4 vs. último mes (simulado)</div>
+              </div>
+              <div className="card">
+                <div className="card-header">Casos en seguimiento</div>
+                <div className="card-value">{kpis.seguimiento}</div>
+                <div className="card-trend bad">
+                  Atención prioritaria para evitar reclamos formales
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-header">% clientes que responden</div>
+                <div className="card-value">{kpis.tasaEncuesta}%</div>
+                <div className="card-trend">
+                  Meta mínima sugerida: 80% con automatización
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-header">Total encuestas del período</div>
+                <div className="card-value">{kpis.total}</div>
+                <div className="card-trend">
+                  Datos ficticios para el demo omnicanal
+                </div>
+              </div>
+            </div>
+
+            <div className="grid">
+              <div className="card table-wrapper">
+                <div className="table-header">
+                  <div className="table-title">
+                    Clientes del taller con encuesta después del servicio
+                  </div>
+                  <div style={{ fontSize: "11px", color: "var(--muted)" }}>
+                    Total: {filtered.length} registros
+                  </div>
+                </div>
+                <div style={{ marginBottom: 6, display: "flex", gap: 8 }}>
+                  <select
+                    className="select"
+                    value={filterEstado}
+                    onChange={(e) => setFilterEstado(e.target.value)}
+                  >
+                    <option value="TODOS">Todos los estados</option>
+                    <option value="OK">Solo OK</option>
+                    <option value="SEGUIMIENTO">Solo seguimiento</option>
+                  </select>
+                  <input
+                    className="input"
+                    placeholder="Buscar cliente, placa o servicio..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <div style={{ overflowY: "auto" }}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Canal</th>
+                        <th>Fecha</th>
+                        <th>Satisf.</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((item) => (
+                        <tr
+                          key={item.id}
+                          className={
+                            selected && selected.id === item.id ? "row-selected" : ""
+                          }
+                          onClick={() => setSelectedId(item.id)}
+                        >
+                          <td>{item.nombre}</td>
+                          <td>{item.servicio}</td>
+                          <td>
+                            <span className={channelClass(item.canal)}>
+                              {item.canal}
+                            </span>
+                          </td>
+                          <td>{item.fecha}</td>
+                          <td>{item.satisfaccion.toFixed(1)}</td>
+                          <td>
+                            <span
+                              className={
+                                "status-pill " +
+                                (item.estado === "OK"
+                                  ? "status-ok"
+                                  : "status-follow")
+                              }
+                            >
+                              {item.estado === "OK" ? "OK" : "Seguimiento"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {filtered.length === 0 && (
+                        <tr>
+                          <td colSpan="6" style={{ paddingTop: 20 }}>
+                            No hay registros con los filtros actuales.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="card details-card">
+                {selected ? (
+                  <>
+                    <div className="details-header">
+                      <div>
+                        <div className="details-name">{selected.nombre}</div>
+                        <div className="details-plate">
+                          {selected.placa} · {selected.servicio}
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          className={
+                            "status-pill " +
+                            (selected.estado === "OK"
+                              ? "status-ok"
+                              : "status-follow")
+                          }
+                        >
+                          {selected.estado === "OK"
+                            ? "Cliente satisfecho"
+                            : "Caso en seguimiento"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="details-body">
+                      <div>
+                        <div className="details-block-title">Comentario</div>
+                        <div className="details-comment">{selected.comentario}</div>
+                      </div>
+                      <div className="details-meta-grid">
+                        <div>
+                          <div className="meta-item-label">Canal</div>
+                          <div className="meta-item-value">
+                            <span className={channelClass(selected.canal)}>
+                              {selected.canal}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="meta-item-label">Fecha encuesta</div>
+                          <div className="meta-item-value">{selected.fecha}</div>
+                        </div>
+                        <div>
+                          <div className="meta-item-label">Técnico</div>
+                          <div className="meta-item-value">{selected.tecnico}</div>
+                        </div>
+                        <div>
+                          <div className="meta-item-label">Satisfacción</div>
+                          <div className="meta-item-value">
+                            {selected.satisfaccion.toFixed(1)} / 10
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="details-block-title">
+                          Acciones sugeridas
+                        </div>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {selected.estado === "SEGUIMIENTO" ? (
+                            <>
+                              <span className="chip">
+                                Llamar al cliente en las próximas 24 h
+                              </span>
+                              <span className="chip">
+                                Revisar trabajo con el técnico asignado
+                              </span>
+                              <span className="chip">
+                                Registrar resultado en el sistema
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="chip">
+                                Agradecer y solicitar reseña positiva
+                              </span>
+                              <span className="chip">
+                                Mantener estándar de tiempos
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                    Seleccione un registro para ver el detalle.
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        );
+      }
+
+      function WhatsappView({ chats }) {
+        const [selectedChatId, setSelectedChatId] = React.useState(
+          chats.length > 0 ? chats[0].id : null
+        );
+        const [searchChat, setSearchChat] = React.useState("");
+
+        const filteredChats = chats.filter((chat) => {
+          const t = searchChat.toLowerCase();
+          return (
+            chat.nombre.toLowerCase().includes(t) ||
+            chat.placa.toLowerCase().includes(t)
+          );
+        });
+
+        const selected =
+          filteredChats.find((c) => c.id === selectedChatId) ||
+          filteredChats[0] ||
+          null;
+
+        React.useEffect(() => {
+          if (!selected && filteredChats.length > 0) {
+            setSelectedChatId(filteredChats[0].id);
+          }
+        }, [filteredChats, selected]);
+
+        return (
+          <div className="whatsapp-layout">
+            <div className="card whatsapp-list">
+              <div className="whatsapp-list-header">
+                <div style={{ fontSize: 12, fontWeight: 500 }}>
+                  Bandeja WhatsApp · Taller
+                </div>
+                <div style={{ fontSize: 10, color: "var(--muted)" }}>
+                  {filteredChats.length} chats
+                </div>
+              </div>
+              <input
+                className="whatsapp-search"
+                placeholder="Buscar por nombre o placa..."
+                value={searchChat}
+                onChange={(e) => setSearchChat(e.target.value)}
+              />
+              <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6, overflowY: "auto" }}>
+                {filteredChats.map((chat) => (
+                  <div
+                    key={chat.id}
+                    className={
+                      "whatsapp-item " +
+                      (selected && selected.id === chat.id ? "active" : "")
+                    }
+                    onClick={() => setSelectedChatId(chat.id)}
+                  >
+                    <div className="whatsapp-item-left">
+                      <div className="whatsapp-avatar">
+                        {chat.nombre
+                          .split(" ")
+                          .map((p) => p[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </div>
+                      <div className="whatsapp-item-main">
+                        <div className="whatsapp-name">
+                          {chat.nombre} · {chat.placa}
+                        </div>
+                        <div className="whatsapp-last">
+                          {chat.ultimoMensaje}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="whatsapp-item-right">
+                      <span>{chat.hora}</span>
+                      <span
+                        className={
+                          "whatsapp-badge " + (chat.unread > 0 ? "unread" : "")
+                        }
+                      >
+                        {chat.unread > 0 ? `${chat.unread} nuevos` : "Leído"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {filteredChats.length === 0 && (
+                  <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 8 }}>
+                    No hay chats con ese filtro.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="whatsapp-conversation">
+              {selected ? (
+                <>
+                  <div className="whatsapp-conv-header">
+                    <div>
+                      <div className="whatsapp-conv-name">{selected.nombre}</div>
+                      <div className="whatsapp-conv-meta">
+                        Placa {selected.placa} · WhatsApp · {selected.estado}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 10, color: "var(--muted)" }}>
+                      Simulación de conversación real
+                    </div>
+                  </div>
+                  <div className="whatsapp-conv-body">
+                    {selected.mensajes.map((m, idx) => (
+                      <div
+                        key={idx}
+                        style={{ display: "flex", flexDirection: "column" }}
+                      >
+                        <div
+                          className={
+                            "bubble " +
+                            (m.de === "cliente" ? "cliente" : "taller")
+                          }
+                        >
+                          {m.texto}
+                        </div>
+                        <div
+                          className="bubble-time"
+                          style={{
+                            alignSelf:
+                              m.de === "cliente" ? "flex-start" : "flex-end",
+                          }}
+                        >
+                          {m.hora}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="whatsapp-conv-footer">
+                    <span>
+                      Este módulo en producción se conecta al proveedor de
+                      WhatsApp Business para enviar y recibir en tiempo real.
+                    </span>
+                    <span className="chip">
+                      Próximo paso: crear tarea interna de seguimiento
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                  Seleccione un chat para ver la conversación.
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      function App() {
+        const [view, setView] = React.useState("DASHBOARD");
+        const [selectedId, setSelectedId] = React.useState(demoData[0].id);
+        const [filterEstado, setFilterEstado] = React.useState("TODOS");
+        const [search, setSearch] = React.useState("");
+
+        const isDashboard = view === "DASHBOARD";
+
+        return (
+          <div className="app">
+            <aside className="sidebar">
+              <div className="logo">
+                <div className="logo-badge">N</div>
+                <div>
+                  <div className="logo-text-main">NOA OMNICANAL</div>
+                  <div className="logo-text-sub">
+                    Talleres · Enderezado y pintura
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="sidebar-section-title">Panel</div>
+                <div className="nav-list">
+                  <div
+                    className={"nav-item " + (isDashboard ? "active" : "")}
+                    onClick={() => setView("DASHBOARD")}
+                  >
+                    <span className="nav-item-left">
+                      <span className="nav-dot" />
+                      <span>Dashboard de satisfacción</span>
+                    </span>
+                    <span style={{ fontSize: 10 }}>●</span>
+                  </div>
+                  <div
+                    className={
+                      "nav-item " + (!isDashboard ? "active" : "")
+                    }
+                    onClick={() => setView("WHATSAPP")}
+                  >
+                    <span className="nav-item-left">
+                      <span className="nav-dot" />
+                      <span>Bandeja WhatsApp NOA</span>
+                    </span>
+                    <span style={{ fontSize: 10 }}>💬</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="sidebar-footer">
+                Demo funcional omnicanal
+                <div className="sidebar-tagline">
+                  No somos un software, somos productividad inteligente.
+                </div>
+              </div>
+            </aside>
+
+            <main className="content">
+              <div className="topbar">
+                <div className="topbar-title-group">
+                  <div className="topbar-title">
+                    {isDashboard
+                      ? "Panel de experiencia · Taller Demo"
+                      : "Bandeja WhatsApp NOA · Simulación"}
+                  </div>
+                  <div className="topbar-subtitle">
+                    {isDashboard
+                      ? "Vista consolidada de encuestas post-servicio y casos de seguimiento."
+                      : "Vista estilo WhatsApp Business conectada al motor omnicanal de NOA."}
+                  </div>
+                </div>
+                <div className="topbar-right">
+                  <span className="badge">Datos ficticios en tiempo real</span>
+                  <span className="badge badge-accent">
+                    Demo omnicanal · Taller automotriz
+                  </span>
+                </div>
+              </div>
+
+              {isDashboard ? (
+                <DashboardView
+                  data={demoData}
+                  filterEstado={filterEstado}
+                  setFilterEstado={setFilterEstado}
+                  search={search}
+                  setSearch={setSearch}
+                  selectedId={selectedId}
+                  setSelectedId={setSelectedId}
+                />
+              ) : (
+                <WhatsappView chats={whatsappChats} />
+              )}
+
+              <div className="footer">
+                <div>
+                  Esta vista muestra cómo NOA centraliza la experiencia del
+                  cliente en un solo panel.
+                </div>
+                <div className="footer-right">
+                  Demo NOA Omnicanal · Talleres · Enderezado y pintura
+                </div>
+              </div>
+            </main>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
